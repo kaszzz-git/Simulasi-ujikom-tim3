@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Sensor | Monitoring IoT</title>
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="css/dashboard.css" />
+  <style>
+    /* Tambahan styling khusus halaman sensor */
+    .sensor-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .sensor-device {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 1.5rem;
+      border: 1px solid var(--border-color);
+      transition: all 0.3s ease;
+    }
+
+    .sensor-device:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+    }
+
+    .sensor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      padding-bottom: 1rem;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .sensor-name {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .sensor-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .sensor-icon.temperature { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+    .sensor-icon.humidity { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+    .sensor-icon.pressure { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+    .sensor-icon.light { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+
+    .sensor-status {
+      padding: 0.25rem 0.75rem;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 500;
+    }
+
+    .status-active {
+      background: #d4edda;
+      color: #155724;
+    }
+
+    .status-warning {
+      background: #fff3cd;
+      color: #856404;
+    }
+
+    .status-error {
+      background: #f8d7da;
+      color: #721c24;
+    }
+
+    .sensor-readings {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .reading-item {
+      background: var(--bg-secondary);
+      padding: 1rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+
+    .reading-label {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-bottom: 0.25rem;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
+    .reading-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text-primary);
+    }
+
+    .reading-unit {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    .sensor-actions {
+      display: flex;
+      gap: 0.75rem;
+    }
+
+    .btn {
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+      border: none;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-size: 0.875rem;
+      flex: 1;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    .btn-secondary {
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+      border: 1px solid var(--border-color);
+    }
+
+    .btn:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+
+    .add-sensor {
+      border: 2px dashed var(--border-color);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 300px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .add-sensor:hover {
+      border-color: #667eea;
+      background: rgba(102, 126, 234, 0.05);
+    }
+
+    .add-sensor-content {
+      text-align: center;
+      color: var(--text-muted);
+    }
+
+    .add-sensor-content span {
+      font-size: 3rem;
+      display: block;
+      margin-bottom: 0.5rem;
+    }
+
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.5);
+      z-index: 1000;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .modal.active {
+      display: flex;
+    }
+
+    .modal-content {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 2rem;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    .form-group {
+      margin-bottom: 1rem;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 0.5rem;
+      font-weight: 500;
+      color: var(--text-primary);
+    }
+
+    .form-group input,
+    .form-group select {
+      width: 100%;
+      padding: 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      background: var(--bg-secondary);
+      color: var(--text-primary);
+    }
+
+    .modal-actions {
+      display: flex;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="sidebar-brand">
+        <img src="img/logo.png" alt="Logo" />
+        <span>Monitoring<strong>IoT</strong></span>
+      </div>
+      <nav class="sidebar-nav">
+        <a href="dashboard.html">📊 Dashboard</a>
+        <a href="sensor.html" class="active">🌡 Sensor</a>
+        <a href="riwayat.html">📈 Riwayat</a>
+        <a href="pengaturan.html">⚙ Pengaturan</a>
+        <a href="#" id="logoutBtn" class="logout">↩ Keluar</a>
+      </nav>
+    </aside>
+
+    <!-- Main -->
+    <main class="main">
+      <header class="topbar">
+        <div>
+          <h1>Manajemen Sensor</h1>
+          <p class="muted">Kelola dan pantau semua sensor IoT Anda.</p>
+        </div>
+        <div class="topbar-actions">
+          <button class="btn btn-primary" onclick="openAddSensorModal()">+ Tambah Sensor</button>
+          <div class="status-pill"><span class="dot online"></span> 4 Sensor Aktif</div>
+          <div class="avatar">U</div>
+        </div>
+      </header>
+
+      <!-- Sensor Grid -->
+      <div class="sensor-grid" id="sensorGrid">
+        <!-- Sensor 1: Suhu -->
+        <div class="sensor-device">
+          <div class="sensor-header">
+            <div class="sensor-name">
+              <div class="sensor-icon temperature">🌡️</div>
+              <div>
+                <h3>Sensor Suhu DHT22</h3>
+                <small class="muted">Ruang Server 1</small>
+              </div>
+            </div>
+            <span class="sensor-status status-active">● Aktif</span>
+          </div>
+          <div class="sensor-readings">
+            <div class="reading-item">
+              <div class="reading-label">Suhu Saat Ini</div>
+              <div class="reading-value">24.5<span class="reading-unit">°C</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Kelembapan</div>
+              <div class="reading-value">65<span class="reading-unit">%</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Maks Hari Ini</div>
+              <div class="reading-value">26.2<span class="reading-unit">°C</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Min Hari Ini</div>
+              <div class="reading-value">23.1<span class="reading-unit">°C</span></div>
+            </div>
+          </div>
+          <div class="sensor-actions">
+            <button class="btn btn-primary" onclick="refreshSensor('sensor1')">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="configureSensor('sensor1')">⚙ Konfigurasi</button>
+          </div>
+        </div>
+
+        <!-- Sensor 2: Kelembapan -->
+        <div class="sensor-device">
+          <div class="sensor-header">
+            <div class="sensor-name">
+              <div class="sensor-icon humidity">💧</div>
+              <div>
+                <h3>Sensor Kelembapan SHTC3</h3>
+                <small class="muted">Ruang Tanaman</small>
+              </div>
+            </div>
+            <span class="sensor-status status-warning">● Perhatian</span>
+          </div>
+          <div class="sensor-readings">
+            <div class="reading-item">
+              <div class="reading-label">Kelembapan</div>
+              <div class="reading-value">78<span class="reading-unit">%</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Suhu</div>
+              <div class="reading-value">28.3<span class="reading-unit">°C</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Maks Hari Ini</div>
+              <div class="reading-value">82<span class="reading-unit">%</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Min Hari Ini</div>
+              <div class="reading-value">65<span class="reading-unit">%</span></div>
+            </div>
+          </div>
+          <div class="sensor-actions">
+            <button class="btn btn-primary" onclick="refreshSensor('sensor2')">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="configureSensor('sensor2')">⚙ Konfigurasi</button>
+          </div>
+        </div>
+
+        <!-- Sensor 3: Tekanan -->
+        <div class="sensor-device">
+          <div class="sensor-header">
+            <div class="sensor-name">
+              <div class="sensor-icon pressure">🌪️</div>
+              <div>
+                <h3>Sensor Tekanan BMP280</h3>
+                <small class="muted">Laboratorium</small>
+              </div>
+            </div>
+            <span class="sensor-status status-active">● Aktif</span>
+          </div>
+          <div class="sensor-readings">
+            <div class="reading-item">
+              <div class="reading-label">Tekanan</div>
+              <div class="reading-value">1013<span class="reading-unit">hPa</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Ketinggian</div>
+              <div class="reading-value">125<span class="reading-unit">m</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Suhu</div>
+              <div class="reading-value">22.8<span class="reading-unit">°C</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Tren</div>
+              <div class="reading-value">↗<span class="reading-unit">Naik</span></div>
+            </div>
+          </div>
+          <div class="sensor-actions">
+            <button class="btn btn-primary" onclick="refreshSensor('sensor3')">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="configureSensor('sensor3')">⚙ Konfigurasi</button>
+          </div>
+        </div>
+
+        <!-- Sensor 4: Cahaya -->
+        <div class="sensor-device">
+          <div class="sensor-header">
+            <div class="sensor-name">
+              <div class="sensor-icon light">☀️</div>
+              <div>
+                <h3>Sensor Cahaya BH1750</h3>
+                <small class="muted">Area Luar</small>
+              </div>
+            </div>
+            <span class="sensor-status status-error">● Error</span>
+          </div>
+          <div class="sensor-readings">
+            <div class="reading-item">
+              <div class="reading-label">Cahaya</div>
+              <div class="reading-value">850<span class="reading-unit">lux</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">UV Index</div>
+              <div class="reading-value">3.2<span class="reading-unit">UVI</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Maks Hari Ini</div>
+              <div class="reading-value">1200<span class="reading-unit">lux</span></div>
+            </div>
+            <div class="reading-item">
+              <div class="reading-label">Baterai</div>
+              <div class="reading-value">15<span class="reading-unit">%</span></div>
+            </div>
+          </div>
+          <div class="sensor-actions">
+            <button class="btn btn-primary" onclick="refreshSensor('sensor4')">🔄 Refresh</button>
+            <button class="btn btn-secondary" onclick="configureSensor('sensor4')">⚙ Konfigurasi</button>
+          </div>
+        </div>
+
+        <!-- Add Sensor Card -->
+        <div class="sensor-device add-sensor" onclick="openAddSensorModal()">
+          <div class="add-sensor-content">
+            <span>➕</span>
+            <h3>Tambah Sensor Baru</h3>
+            <p class="muted">Klik untuk menambahkan sensor baru ke sistem</p>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Modal Tambah Sensor -->
+  <div class="modal" id="addSensorModal">
+    <div class="modal-content">
+      <h2>Tambah Sensor Baru</h2>
+      <form id="addSensorForm" onsubmit="addSensor(event)">
+        <div class="form-group">
+          <label>Nama Sensor</label>
+          <input type="text" placeholder="Masukkan nama sensor" required />
+        </div>
+        <div class="form-group">
+          <label>Tipe Sensor</label>
+          <select required>
+            <option value="">Pilih tipe sensor</option>
+            <option value="temperature">Suhu (DHT22)</option>
+            <option value="humidity">Kelembapan (SHTC3)</option>
+            <option value="pressure">Tekanan (BMP280)</option>
+            <option value="light">Cahaya (BH1750)</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Lokasi</label>
+          <input type="text" placeholder="Masukkan lokasi sensor" required />
+        </div>
+        <div class="modal-actions">
+          <button type="button" class="btn btn-secondary" onclick="closeAddSensorModal()">Batal</button>
+          <button type="submit" class="btn btn-primary">Tambahkan</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <script>
+    // Fungsi untuk modal
+    function openAddSensorModal() {
+      document.getElementById('addSensorModal').classList.add('active');
+    }
+
+    function closeAddSensorModal() {
+      document.getElementById('addSensorModal').classList.remove('active');
+    }
+
+    // Fungsi untuk menambah sensor
+    function addSensor(event) {
+      event.preventDefault();
+      // Logika untuk menambah sensor baru
+      alert('Sensor berhasil ditambahkan!');
+      closeAddSensorModal();
+    }
+
+    // Fungsi untuk refresh sensor
+    function refreshSensor(sensorId) {
+      const btn = event.target;
+      const originalText = btn.innerHTML;
+      btn.innerHTML = '⏳ Loading...';
+      btn.disabled = true;
+      
+      // Simulasi refresh
+      setTimeout(() => {
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        alert('Data sensor ' + sensorId + ' berhasil diperbarui!');
+      }, 2000);
+    }
+
+    // Fungsi untuk konfigurasi sensor
+    function configureSensor(sensorId) {
+      alert('Membuka konfigurasi untuk ' + sensorId);
+    }
+
+    // Logout handler
+    document.getElementById('logoutBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      if(confirm('Apakah Anda yakin ingin keluar?')) {
+        window.location.href = 'login.html';
+      }
+    });
+
+    // Update real-time (simulasi)
+    function updateSensorReadings() {
+      const readings = document.querySelectorAll('.reading-value');
+      readings.forEach(reading => {
+        // Simulasi perubahan nilai kecil untuk efek real-time
+        const currentValue = parseFloat(reading.textContent);
+        if (!isNaN(currentValue)) {
+          const variation = (Math.random() - 0.5) * 0.2;
+          const unit = reading.querySelector('.reading-unit');
+          if (unit) {
+            const unitText = unit.textContent;
+            if (unitText === '°C') {
+              reading.innerHTML = (currentValue + variation).toFixed(1) + '<span class="reading-unit">°C</span>';
+            }
+          }
+        }
+      });
+    }
+
+    // Update setiap 5 detik
+    setInterval(updateSensorReadings, 5000);
+
+    // Tutup modal jika klik di luar
+    window.addEventListener('click', function(e) {
+      const modal = document.getElementById('addSensorModal');
+      if (e.target === modal) {
+        closeAddSensorModal();
+      }
+    });
+  </script>
+</body>
+</html>
