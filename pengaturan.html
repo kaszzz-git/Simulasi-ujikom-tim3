@@ -1,678 +1,844 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Pengaturan | Monitoring IoT</title>
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="css/dashboard.css" />
-  <style>
-    .settings-container {
-      display: grid;
-      grid-template-columns: 250px 1fr;
-      gap: 2rem;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Pengaturan | Monitoring IoT</title>
+<link rel="stylesheet" href="css/style.css" />
+<link rel="stylesheet" href="css/dashboard.css" />
+<style>
+  * { box-sizing: border-box; }
 
-    .settings-sidebar {
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 1rem;
-      height: fit-content;
-      position: sticky;
-      top: 2rem;
-    }
+  .settings-container {
+    display: grid;
+    grid-template-columns: 240px 1fr;
+    gap: 1.5rem;
+    align-items: start;
+  }
 
-    .settings-nav {
-      display: flex;
-      flex-direction: column;
-      gap: 0.25rem;
-    }
+  /* ── Sidebar ── */
+  .settings-sidebar {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 1.25rem;
+    position: sticky;
+    top: 2rem;
+  }
 
-    .settings-nav-item {
-      padding: 0.75rem 1rem;
-      border-radius: 8px;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      color: var(--text-primary);
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 0.75rem;
-      border: none;
-      background: transparent;
-      width: 100%;
-      text-align: left;
-    }
+  .sidebar-label {
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    padding: 0 0.75rem;
+    margin-bottom: 0.5rem;
+  }
 
-    .settings-nav-item:hover {
-      background: var(--bg-secondary);
-    }
+  .settings-nav {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+  }
 
-    .settings-nav-item.active {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-    }
+  .settings-nav-item {
+    padding: 0.65rem 0.875rem;
+    border-radius: 10px;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease;
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.625rem;
+    border: none;
+    background: transparent;
+    width: 100%;
+    text-align: left;
+  }
 
-    .settings-content {
-      background: var(--card-bg);
-      border-radius: 12px;
-      border: 1px solid var(--border-color);
-      padding: 2rem;
-    }
+  .settings-nav-item:hover {
+    background: var(--bg-secondary);
+  }
 
-    .settings-section {
-      display: none;
-    }
+  .settings-nav-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+  }
 
-    .settings-section.active {
-      display: block;
-    }
+  .nav-icon {
+    font-size: 1rem;
+    width: 20px;
+    text-align: center;
+  }
 
-    .settings-section h2 {
-      margin-bottom: 1.5rem;
-      padding-bottom: 1rem;
-      border-bottom: 1px solid var(--border-color);
-    }
+  /* ── Content ── */
+  .settings-content {
+    background: var(--card-bg);
+    border-radius: 16px;
+    border: 1px solid var(--border-color);
+    padding: 2rem;
+  }
 
-    .form-group {
-      margin-bottom: 1.5rem;
-    }
+  .settings-section { display: none; }
+  .settings-section.active { display: block; }
 
-    .form-group label {
-      display: block;
-      margin-bottom: 0.5rem;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
+  .section-heading {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.75rem;
+    padding-bottom: 1.25rem;
+    border-bottom: 1px solid var(--border-color);
+  }
 
-    .form-group input,
-    .form-group select,
-    .form-group textarea {
-      width: 100%;
-      padding: 0.75rem;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-size: 0.9rem;
-    }
+  .section-heading h2 {
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+  }
 
-    .form-group textarea {
-      min-height: 100px;
-      resize: vertical;
-    }
+  .section-heading .heading-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, rgba(102,126,234,0.15) 0%, rgba(118,75,162,0.15) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+  }
 
-    .form-row {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
+  /* ── Form ── */
+  .form-group {
+    margin-bottom: 1.25rem;
+  }
 
-    .toggle-switch {
-      position: relative;
-      display: inline-block;
-      width: 50px;
-      height: 26px;
-    }
+  .form-group label {
+    display: block;
+    margin-bottom: 0.4rem;
+    font-size: 0.825rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    letter-spacing: 0.01em;
+  }
 
-    .toggle-switch input {
-      opacity: 0;
-      width: 0;
-      height: 0;
-    }
+  .form-group input,
+  .form-group select,
+  .form-group textarea {
+    width: 100%;
+    padding: 0.65rem 0.875rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    font-size: 0.875rem;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    outline: none;
+  }
 
-    .toggle-slider {
-      position: absolute;
-      cursor: pointer;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background-color: #ccc;
-      transition: 0.4s;
-      border-radius: 34px;
-    }
+  .form-group input:focus,
+  .form-group select:focus,
+  .form-group textarea:focus {
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102,126,234,0.15);
+  }
 
-    .toggle-slider:before {
-      position: absolute;
-      content: "";
-      height: 18px;
-      width: 18px;
-      left: 4px;
-      bottom: 4px;
-      background-color: white;
-      transition: 0.4s;
-      border-radius: 50%;
-    }
+  .form-group textarea {
+    min-height: 90px;
+    resize: vertical;
+  }
 
-    input:checked + .toggle-slider {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    }
+  .form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
 
-    input:checked + .toggle-slider:before {
-      transform: translateX(24px);
-    }
+  /* ── Toggle ── */
+  .toggle-switch {
+    position: relative;
+    display: inline-block;
+    width: 46px;
+    height: 24px;
+    flex-shrink: 0;
+  }
 
-    .setting-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 1rem 0;
-      border-bottom: 1px solid var(--border-color);
-    }
+  .toggle-switch input { opacity: 0; width: 0; height: 0; }
 
-    .setting-info h4 {
-      margin-bottom: 0.25rem;
-    }
+  .toggle-slider {
+    position: absolute;
+    cursor: pointer;
+    inset: 0;
+    background: #d1d5db;
+    transition: 0.3s;
+    border-radius: 34px;
+  }
 
-    .setting-info p {
-      color: var(--text-muted);
-      font-size: 0.85rem;
-    }
+  .toggle-slider:before {
+    position: absolute;
+    content: "";
+    height: 17px;
+    width: 17px;
+    left: 3.5px;
+    bottom: 3.5px;
+    background: #fff;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
 
-    .btn-save {
-      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-      color: white;
-      padding: 0.75rem 2rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
+  input:checked + .toggle-slider {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  }
 
-    .btn-save:hover {
-      transform: translateY(-1px);
-      box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
-    }
+  input:checked + .toggle-slider:before {
+    transform: translateX(22px);
+  }
 
-    .btn-danger {
-      background: #dc3545;
-      color: white;
-      padding: 0.75rem 2rem;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-      font-weight: 500;
-      transition: all 0.3s ease;
-    }
+  /* ── Setting Item ── */
+  .setting-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--border-color);
+    gap: 1rem;
+  }
 
-    .btn-danger:hover {
-      background: #c82333;
-      transform: translateY(-1px);
-    }
+  .setting-item:last-of-type { border-bottom: none; }
 
-    .alert-thresholds {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem;
-    }
+  .setting-info h4 {
+    margin: 0 0 0.2rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
 
-    .threshold-item {
-      background: var(--bg-secondary);
-      padding: 1rem;
-      border-radius: 8px;
-    }
+  .setting-info p {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 0.8rem;
+  }
 
-    .threshold-item h4 {
-      margin-bottom: 0.75rem;
-      color: var(--text-primary);
-    }
+  /* ── Buttons ── */
+  .btn-save {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 0.65rem 1.5rem;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  }
 
-    .backup-info {
-      background: var(--bg-secondary);
-      padding: 1.5rem;
-      border-radius: 8px;
-      margin-bottom: 1.5rem;
-    }
+  .btn-save:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 6px 16px rgba(102,126,234,0.35);
+  }
 
-    .backup-info p {
-      margin-bottom: 0.5rem;
-    }
+  .btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+  }
 
-    @media (max-width: 768px) {
-      .settings-container {
-        grid-template-columns: 1fr;
-      }
-      
-      .form-row {
-        grid-template-columns: 1fr;
-      }
-      
-      .alert-thresholds {
-        grid-template-columns: 1fr;
-      }
-    }
-  </style>
+  .btn-danger {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: transparent;
+    color: #dc3545;
+    padding: 0.65rem 1.5rem;
+    border: 1px solid #dc3545;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-danger:hover {
+    background: #dc3545;
+    color: #fff;
+    transform: translateY(-1px);
+  }
+
+  .btn-secondary {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    background: var(--bg-secondary);
+    color: var(--text-primary);
+    padding: 0.65rem 1.5rem;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.875rem;
+    font-weight: 600;
+    transition: background 0.2s ease, transform 0.2s ease;
+  }
+
+  .btn-secondary:hover {
+    background: var(--border-color);
+    transform: translateY(-1px);
+  }
+
+  .btn-group {
+    display: flex;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    margin-top: 1.75rem;
+  }
+
+  /* ── Thresholds ── */
+  .alert-thresholds {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1rem;
+  }
+
+  .threshold-item {
+    background: var(--bg-secondary);
+    padding: 1.25rem;
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+  }
+
+  .threshold-item h4 {
+    margin: 0 0 1rem;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  /* ── Backup ── */
+  .backup-card {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 12px;
+    padding: 1.25rem 1.5rem;
+    margin-bottom: 1.5rem;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 1rem;
+  }
+
+  .backup-stat {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+  }
+
+  .backup-stat span:first-child {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .backup-stat span:last-child {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  /* ── Toast ── */
+  .toast {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    padding: 0.875rem 1.5rem;
+    border-radius: 12px;
+    font-size: 0.875rem;
+    font-weight: 500;
+    box-shadow: 0 8px 24px rgba(102,126,234,0.35);
+    transform: translateY(80px);
+    opacity: 0;
+    transition: transform 0.35s cubic-bezier(0.34,1.56,0.64,1), opacity 0.3s ease;
+    z-index: 9999;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .toast.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  /* ── Responsive ── */
+  @media (max-width: 900px) {
+    .settings-container { grid-template-columns: 1fr; }
+    .settings-sidebar { position: static; }
+    .settings-nav { flex-direction: row; flex-wrap: wrap; }
+    .settings-nav-item { flex: 1; min-width: 120px; justify-content: center; }
+  }
+
+  @media (max-width: 600px) {
+    .form-row { grid-template-columns: 1fr; }
+    .alert-thresholds { grid-template-columns: 1fr; }
+    .backup-card { grid-template-columns: 1fr; }
+    .settings-content { padding: 1.25rem; }
+  }
+</style>
 </head>
 <body>
-  <div class="app-shell">
-    <!-- Sidebar -->
-    <aside class="sidebar">
-      <div class="sidebar-brand">
-        <img src="img/logo.png" alt="Logo" />
-        <span>Monitoring<strong>IoT</strong></span>
+<div class="app-shell">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand">
+      <img src="img/logo.png" alt="Logo" />
+      <span>Monitoring<strong>IoT</strong></span>
+    </div>
+    <nav class="sidebar-nav">
+      <a href="dashboard.html">📊 Dashboard</a>
+      <a href="sensor.html">🌡 Sensor</a>
+      <a href="riwayat.html">📈 Riwayat</a>
+      <a href="pengaturan.html" class="active">⚙ Pengaturan</a>
+      <a href="#" id="logoutBtn" class="logout">↩ Keluar</a>
+    </nav>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+    <header class="topbar">
+      <div>
+        <h1>Pengaturan Sistem</h1>
+        <p class="muted">Konfigurasi sistem monitoring IoT Anda.</p>
       </div>
-      <nav class="sidebar-nav">
-        <a href="dashboard.html">📊 Dashboard</a>
-        <a href="sensor.html">🌡 Sensor</a>
-        <a href="riwayat.html">📈 Riwayat</a>
-        <a href="pengaturan.html" class="active">⚙ Pengaturan</a>
-        <a href="#" id="logoutBtn" class="logout">↩ Keluar</a>
-      </nav>
-    </aside>
+      <div class="topbar-actions">
+        <div class="avatar">U</div>
+      </div>
+    </header>
 
-    <!-- Main -->
-    <main class="main">
-      <header class="topbar">
-        <div>
-          <h1>Pengaturan Sistem</h1>
-          <p class="muted">Konfigurasi sistem monitoring IoT Anda.</p>
-        </div>
-        <div class="topbar-actions">
-          <div class="avatar">U</div>
-        </div>
-      </header>
+    <div class="settings-container">
 
-      <div class="settings-container">
-        <!-- Settings Navigation -->
-        <div class="settings-sidebar">
-          <div class="settings-nav">
-            <button class="settings-nav-item active" onclick="showSettings('profile')">
-              👤 Profil
-            </button>
-            <button class="settings-nav-item" onclick="showSettings('notifications')">
-              🔔 Notifikasi
-            </button>
-            <button class="settings-nav-item" onclick="showSettings('thresholds')">
-              ⚠️ Ambang Batas
-            </button>
-            <button class="settings-nav-item" onclick="showSettings('devices')">
-              📱 Perangkat
-            </button>
-            <button class="settings-nav-item" onclick="showSettings('backup')">
-              💾 Backup & Restore
-            </button>
-            <button class="settings-nav-item" onclick="showSettings('security')">
-              🔒 Keamanan
-            </button>
-          </div>
+      <!-- Settings Sidebar -->
+      <div class="settings-sidebar">
+        <p class="sidebar-label">Menu</p>
+        <div class="settings-nav">
+          <button class="settings-nav-item active" onclick="showSettings('profile', this)">
+            <span class="nav-icon">👤</span> Profil
+          </button>
+          <button class="settings-nav-item" onclick="showSettings('notifications', this)">
+            <span class="nav-icon">🔔</span> Notifikasi
+          </button>
+          <button class="settings-nav-item" onclick="showSettings('thresholds', this)">
+            <span class="nav-icon">⚠️</span> Ambang Batas
+          </button>
+          <button class="settings-nav-item" onclick="showSettings('devices', this)">
+            <span class="nav-icon">📱</span> Perangkat
+          </button>
+          <button class="settings-nav-item" onclick="showSettings('backup', this)">
+            <span class="nav-icon">💾</span> Backup & Restore
+          </button>
+          <button class="settings-nav-item" onclick="showSettings('security', this)">
+            <span class="nav-icon">🔒</span> Keamanan
+          </button>
         </div>
+      </div>
 
-        <!-- Settings Content -->
-        <div class="settings-content">
-          <!-- Profil Section -->
-          <div class="settings-section active" id="profile-section">
+      <!-- Settings Content -->
+      <div class="settings-content">
+
+        <!-- Profil -->
+        <div class="settings-section active" id="profile-section">
+          <div class="section-heading">
+            <div class="heading-icon">👤</div>
             <h2>Pengaturan Profil</h2>
-            <form onsubmit="saveSettings(event, 'profile')">
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Nama Lengkap</label>
-                  <input type="text" value="Pengguna IoT" placeholder="Masukkan nama lengkap" />
-                </div>
-                <div class="form-group">
-                  <label>Email</label>
-                  <input type="email" value="pengguna@iot.com" placeholder="Masukkan email" />
-                </div>
+          </div>
+          <form onsubmit="saveSettings(event, 'profil')">
+            <div class="form-row">
+              <div class="form-group">
+                <label>Nama Lengkap</label>
+                <input type="text" value="Pengguna IoT" placeholder="Masukkan nama lengkap" />
               </div>
+              <div class="form-group">
+                <label>Email</label>
+                <input type="email" value="pengguna@iot.com" placeholder="Masukkan email" />
+              </div>
+            </div>
+            <div class="form-row">
               <div class="form-group">
                 <label>Nomor Telepon</label>
                 <input type="tel" value="+62 812-3456-7890" placeholder="Masukkan nomor telepon" />
               </div>
               <div class="form-group">
-                <label>Institusi/Perusahaan</label>
-                <input type="text" value="PT Monitoring Indonesia" placeholder="Masukkan nama institusi" />
+                <label>Institusi / Perusahaan</label>
+                <input type="text" value="PT Monitoring Indonesia" placeholder="Nama institusi" />
               </div>
-              <div class="form-group">
-                <label>Alamat</label>
-                <textarea placeholder="Masukkan alamat lengkap">Jl. Teknologi No. 123, Jakarta Selatan</textarea>
-              </div>
-              <button type="submit" class="btn-save">💾 Simpan Perubahan</button>
-            </form>
-          </div>
-
-          <!-- Notifikasi Section -->
-          <div class="settings-section" id="notifications-section">
-            <h2>Pengaturan Notifikasi</h2>
-            <form onsubmit="saveSettings(event, 'notifications')">
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Notifikasi Email</h4>
-                  <p>Terima notifikasi melalui email</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Notifikasi Push</h4>
-                  <p>Terima notifikasi push di browser</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Notifikasi SMS</h4>
-                  <p>Terima notifikasi melalui SMS untuk kejadian kritis</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Ringkasan Harian</h4>
-                  <p>Terima ringkasan data sensor setiap hari</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="form-group" style="margin-top: 2rem;">
-                <label>Frekuensi Notifikasi</label>
-                <select>
-                  <option>Real-time</option>
-                  <option>Setiap 5 menit</option>
-                  <option>Setiap 15 menit</option>
-                  <option>Setiap 1 jam</option>
-                </select>
-              </div>
-              <button type="submit" class="btn-save">💾 Simpan Pengaturan</button>
-            </form>
-          </div>
-
-          <!-- Ambang Batas Section -->
-          <div class="settings-section" id="thresholds-section">
-            <h2>Ambang Batas Sensor</h2>
-            <form onsubmit="saveSettings(event, 'thresholds')">
-              <div class="alert-thresholds">
-                <div class="threshold-item">
-                  <h4>🌡️ Sensor Suhu</h4>
-                  <div class="form-group">
-                    <label>Batas Minimum (°C)</label>
-                    <input type="number" value="18" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Maksimum (°C)</label>
-                    <input type="number" value="30" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Kritis (°C)</label>
-                    <input type="number" value="35" />
-                  </div>
-                </div>
-                <div class="threshold-item">
-                  <h4>💧 Sensor Kelembapan</h4>
-                  <div class="form-group">
-                    <label>Batas Minimum (%)</label>
-                    <input type="number" value="40" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Maksimum (%)</label>
-                    <input type="number" value="80" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Kritis (%)</label>
-                    <input type="number" value="90" />
-                  </div>
-                </div>
-                <div class="threshold-item">
-                  <h4>🌪️ Sensor Tekanan</h4>
-                  <div class="form-group">
-                    <label>Batas Minimum (hPa)</label>
-                    <input type="number" value="980" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Maksimum (hPa)</label>
-                    <input type="number" value="1040" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Kritis (hPa)</label>
-                    <input type="number" value="1050" />
-                  </div>
-                </div>
-                <div class="threshold-item">
-                  <h4>☀️ Sensor Cahaya</h4>
-                  <div class="form-group">
-                    <label>Batas Minimum (lux)</label>
-                    <input type="number" value="100" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Maksimum (lux)</label>
-                    <input type="number" value="2000" />
-                  </div>
-                  <div class="form-group">
-                    <label>Batas Kritis (lux)</label>
-                    <input type="number" value="5000" />
-                  </div>
-                </div>
-              </div>
-              <button type="submit" class="btn-save" style="margin-top: 1.5rem;">💾 Simpan Ambang Batas</button>
-            </form>
-          </div>
-
-          <!-- Perangkat Section -->
-          <div class="settings-section" id="devices-section">
-            <h2>Pengaturan Perangkat</h2>
-            <form onsubmit="saveSettings(event, 'devices')">
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Interval Pembacaan Sensor</h4>
-                  <p>Frekuensi sensor mengambil data</p>
-                </div>
-                <select>
-                  <option>Setiap 1 menit</option>
-                  <option selected>Setiap 5 menit</option>
-                  <option>Setiap 10 menit</option>
-                  <option>Setiap 30 menit</option>
-                  <option>Setiap 1 jam</option>
-                </select>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Mode Hemat Daya</h4>
-                  <p>Kurangi konsumsi daya sensor baterai</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Auto-Kalibrasi</h4>
-                  <p>Kalibrasi sensor secara otomatis</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Debug Mode</h4>
-                  <p>Aktifkan logging detail untuk troubleshooting</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <button type="submit" class="btn-save" style="margin-top: 2rem;">💾 Simpan Konfigurasi</button>
-            </form>
-          </div>
-
-          <!-- Backup Section -->
-          <div class="settings-section" id="backup-section">
-            <h2>Backup & Restore</h2>
-            <div class="backup-info">
-              <p><strong>Backup Terakhir:</strong> 15 Januari 2024, 10:30 WIB</p>
-              <p><strong>Ukuran Backup:</strong> 245 MB</p>
-              <p><strong>Total Data Points:</strong> 12,847</p>
             </div>
-            <form onsubmit="saveSettings(event, 'backup')">
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Backup Otomatis</h4>
-                  <p>Backup data sensor secara otomatis</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="form-group">
-                <label>Frekuensi Backup</label>
-                <select>
-                  <option>Setiap hari</option>
-                  <option selected>Setiap minggu</option>
-                  <option>Setiap bulan</option>
-                </select>
-              </div>
-              <div style="display: flex; gap: 1rem; margin-top: 1.5rem;">
-                <button type="button" class="btn-save" onclick="backupNow()">💾 Backup Sekarang</button>
-                <button type="button" class="btn-export" onclick="restoreBackup()">📂 Restore Backup</button>
-              </div>
-            </form>
-          </div>
-
-          <!-- Keamanan Section -->
-          <div class="settings-section" id="security-section">
-            <h2>Keamanan</h2>
-            <form onsubmit="saveSettings(event, 'security')">
-              <div class="form-group">
-                <label>Password Saat Ini</label>
-                <input type="password" placeholder="Masukkan password saat ini" />
-              </div>
-              <div class="form-row">
-                <div class="form-group">
-                  <label>Password Baru</label>
-                  <input type="password" placeholder="Masukkan password baru" />
-                </div>
-                <div class="form-group">
-                  <label>Konfirmasi Password Baru</label>
-                  <input type="password" placeholder="Konfirmasi password baru" />
-                </div>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Autentikasi Dua Faktor (2FA)</h4>
-                  <p>Tambahkan lapisan keamanan ekstra</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div class="setting-item">
-                <div class="setting-info">
-                  <h4>Notifikasi Login</h4>
-                  <p>Dapatkan notifikasi saat ada login baru</p>
-                </div>
-                <label class="toggle-switch">
-                  <input type="checkbox" checked />
-                  <span class="toggle-slider"></span>
-                </label>
-              </div>
-              <div style="display: flex; gap: 1rem; margin-top: 2rem;">
-                <button type="submit" class="btn-save">💾 Simpan Pengaturan</button>
-                <button type="button" class="btn-danger" onclick="deleteAccount()">🗑️ Hapus Akun</button>
-              </div>
-            </form>
-          </div>
+            <div class="form-group">
+              <label>Alamat</label>
+              <textarea>Jl. Teknologi No. 123, Jakarta Selatan</textarea>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn-save">💾 Simpan Perubahan</button>
+            </div>
+          </form>
         </div>
+
+        <!-- Notifikasi -->
+        <div class="settings-section" id="notifications-section">
+          <div class="section-heading">
+            <div class="heading-icon">🔔</div>
+            <h2>Pengaturan Notifikasi</h2>
+          </div>
+          <form onsubmit="saveSettings(event, 'notifikasi')">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Notifikasi Email</h4>
+                <p>Terima notifikasi melalui email</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Notifikasi Push</h4>
+                <p>Terima notifikasi push di browser</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Notifikasi SMS</h4>
+                <p>Terima notifikasi melalui SMS untuk kejadian kritis</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Ringkasan Harian</h4>
+                <p>Terima ringkasan data sensor setiap hari</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="form-group" style="margin-top: 1.5rem;">
+              <label>Frekuensi Notifikasi</label>
+              <select>
+                <option>Real-time</option>
+                <option>Setiap 5 menit</option>
+                <option>Setiap 15 menit</option>
+                <option>Setiap 1 jam</option>
+              </select>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn-save">💾 Simpan Pengaturan</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Ambang Batas -->
+        <div class="settings-section" id="thresholds-section">
+          <div class="section-heading">
+            <div class="heading-icon">⚠️</div>
+            <h2>Ambang Batas Sensor</h2>
+          </div>
+          <form onsubmit="saveSettings(event, 'ambang batas')">
+            <div class="alert-thresholds">
+              <div class="threshold-item">
+                <h4>🌡️ Sensor Suhu</h4>
+                <div class="form-group">
+                  <label>Batas Minimum (°C)</label>
+                  <input type="number" value="18" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Maksimum (°C)</label>
+                  <input type="number" value="30" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Kritis (°C)</label>
+                  <input type="number" value="35" />
+                </div>
+              </div>
+              <div class="threshold-item">
+                <h4>💧 Sensor Kelembapan</h4>
+                <div class="form-group">
+                  <label>Batas Minimum (%)</label>
+                  <input type="number" value="40" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Maksimum (%)</label>
+                  <input type="number" value="80" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Kritis (%)</label>
+                  <input type="number" value="90" />
+                </div>
+              </div>
+              <div class="threshold-item">
+                <h4>🌪️ Sensor Tekanan</h4>
+                <div class="form-group">
+                  <label>Batas Minimum (hPa)</label>
+                  <input type="number" value="980" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Maksimum (hPa)</label>
+                  <input type="number" value="1040" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Kritis (hPa)</label>
+                  <input type="number" value="1050" />
+                </div>
+              </div>
+              <div class="threshold-item">
+                <h4>☀️ Sensor Cahaya</h4>
+                <div class="form-group">
+                  <label>Batas Minimum (lux)</label>
+                  <input type="number" value="100" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Maksimum (lux)</label>
+                  <input type="number" value="2000" />
+                </div>
+                <div class="form-group">
+                  <label>Batas Kritis (lux)</label>
+                  <input type="number" value="5000" />
+                </div>
+              </div>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn-save">💾 Simpan Ambang Batas</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Perangkat -->
+        <div class="settings-section" id="devices-section">
+          <div class="section-heading">
+            <div class="heading-icon">📱</div>
+            <h2>Pengaturan Perangkat</h2>
+          </div>
+          <form onsubmit="saveSettings(event, 'perangkat')">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Interval Pembacaan Sensor</h4>
+                <p>Frekuensi sensor mengambil data</p>
+              </div>
+              <select style="width: auto; padding: 0.5rem 0.75rem; border: 1px solid var(--border-color); border-radius: 8px; background: var(--bg-secondary); color: var(--text-primary); font-size: 0.85rem;">
+                <option>Setiap 1 menit</option>
+                <option selected>Setiap 5 menit</option>
+                <option>Setiap 10 menit</option>
+                <option>Setiap 30 menit</option>
+                <option>Setiap 1 jam</option>
+              </select>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Mode Hemat Daya</h4>
+                <p>Kurangi konsumsi daya sensor baterai</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Auto-Kalibrasi</h4>
+                <p>Kalibrasi sensor secara otomatis</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Debug Mode</h4>
+                <p>Aktifkan logging detail untuk troubleshooting</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn-save">💾 Simpan Konfigurasi</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Backup -->
+        <div class="settings-section" id="backup-section">
+          <div class="section-heading">
+            <div class="heading-icon">💾</div>
+            <h2>Backup & Restore</h2>
+          </div>
+          <div class="backup-card">
+            <div class="backup-stat">
+              <span>Backup Terakhir</span>
+              <span>15 Jan 2024, 10:30</span>
+            </div>
+            <div class="backup-stat">
+              <span>Ukuran Backup</span>
+              <span>245 MB</span>
+            </div>
+            <div class="backup-stat">
+              <span>Total Data Points</span>
+              <span>12,847</span>
+            </div>
+          </div>
+          <form onsubmit="saveSettings(event, 'backup')">
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Backup Otomatis</h4>
+                <p>Backup data sensor secara otomatis</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+              <label>Frekuensi Backup</label>
+              <select>
+                <option>Setiap hari</option>
+                <option selected>Setiap minggu</option>
+                <option>Setiap bulan</option>
+              </select>
+            </div>
+            <div class="btn-group">
+              <button type="button" class="btn-save" onclick="backupNow()">💾 Backup Sekarang</button>
+              <button type="button" class="btn-secondary" onclick="restoreBackup()">📂 Restore Backup</button>
+            </div>
+          </form>
+        </div>
+
+        <!-- Keamanan -->
+        <div class="settings-section" id="security-section">
+          <div class="section-heading">
+            <div class="heading-icon">🔒</div>
+            <h2>Keamanan</h2>
+          </div>
+          <form onsubmit="saveSettings(event, 'keamanan')">
+            <div class="form-group">
+              <label>Password Saat Ini</label>
+              <input type="password" placeholder="Masukkan password saat ini" />
+            </div>
+            <div class="form-row">
+              <div class="form-group">
+                <label>Password Baru</label>
+                <input type="password" placeholder="Masukkan password baru" />
+              </div>
+              <div class="form-group">
+                <label>Konfirmasi Password Baru</label>
+                <input type="password" placeholder="Konfirmasi password baru" />
+              </div>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Autentikasi Dua Faktor (2FA)</h4>
+                <p>Tambahkan lapisan keamanan ekstra</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="setting-item">
+              <div class="setting-info">
+                <h4>Notifikasi Login</h4>
+                <p>Dapatkan notifikasi saat ada login baru</p>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" checked />
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="btn-group">
+              <button type="submit" class="btn-save">💾 Simpan Pengaturan</button>
+              <button type="button" class="btn-danger" onclick="deleteAccount()">🗑️ Hapus Akun</button>
+            </div>
+          </form>
+        </div>
+
       </div>
-    </main>
-  </div>
+    </div>
+  </main>
+</div>
 
-  <script>
-    // Fungsi untuk menampilkan section pengaturan
-    function showSettings(sectionName) {
-      // Sembunyikan semua section
-      document.querySelectorAll('.settings-section').forEach(section => {
-        section.classList.remove('active');
-      });
-      
-      // Tampilkan section yang dipilih
-      document.getElementById(`${sectionName}-section`).classList.add('active');
-      
-      // Update active state di sidebar
-      document.querySelectorAll('.settings-nav-item').forEach(item => {
-        item.classList.remove('active');
-      });
-      event.target.classList.add('active');
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<script>
+  function showSettings(sectionName, el) {
+    document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
+    document.getElementById(`${sectionName}-section`).classList.add('active');
+    document.querySelectorAll('.settings-nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.innerHTML = msg;
+    t.classList.add('show');
+    setTimeout(() => t.classList.remove('show'), 3000);
+  }
+
+  function saveSettings(event, type) {
+    event.preventDefault();
+    const btn = event.target.querySelector('button[type="submit"]');
+    const orig = btn.innerHTML;
+    btn.innerHTML = '⏳ Menyimpan...';
+    btn.disabled = true;
+    setTimeout(() => {
+      btn.innerHTML = orig;
+      btn.disabled = false;
+      showToast(`✅ Pengaturan ${type} berhasil disimpan`);
+    }, 1500);
+  }
+
+  function backupNow() {
+    if (confirm('Mulai backup data sekarang?')) {
+      showToast('💾 Backup sedang berjalan...');
     }
+  }
 
-    // Fungsi untuk menyimpan pengaturan
-    function saveSettings(event, type) {
-      event.preventDefault();
-      
-      // Simulasi loading
-      const btn = event.target.querySelector('button[type="submit"]');
-      const originalText = btn.innerHTML;
-      btn.innerHTML = '⏳ Menyimpan...';
-      btn.disabled = true;
-      
-      setTimeout(() => {
-        btn.innerHTML = '✅ Tersimpan!';
-        setTimeout(() => {
-          btn.innerHTML = originalText;
-          btn.disabled = false;
-        }, 2000);
-        
-        console.log(`Pengaturan ${type} berhasil disimpan`);
-      }, 1500);
-    }
+  function restoreBackup() {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = '.zip,.json,.csv';
+    input.onchange = e => {
+      const file = e.target.files[0];
+      if (file) showToast(`📂 Restore dari: ${file.name}`);
+    };
+    input.click();
+  }
 
-    // Fungsi backup
-    function backupNow() {
-      if(confirm('Mulai backup data sekarang?')) {
-        alert('Backup sedang berjalan...\n\nAnda akan menerima notifikasi setelah backup selesai.');
+  function deleteAccount() {
+    if (confirm('PERINGATAN: Akun akan dihapus permanen!\n\nSemua data akan hilang. Lanjutkan?')) {
+      if (confirm('Konfirmasi sekali lagi untuk menghapus akun.')) {
+        showToast('🗑️ Akun berhasil dihapus');
+        setTimeout(() => window.location.href = 'login.html', 2000);
       }
     }
+  }
 
-    // Fungsi restore
-    function restoreBackup() {
-      const input = document.createElement('input');
-      input.type = 'file';
-      input.accept = '.zip,.json,.csv';
-      input.onchange = function(e) {
-        const file = e.target.files[0];
-        if(file) {
-          alert(`Restore dari file: ${file.name}\n\nData akan dikembalikan ke versi backup. Lanjutkan?`);
-        }
-      };
-      input.click();
-    }
-
-    // Fungsi hapus akun
-    function deleteAccount() {
-      if(confirm('PERINGATAN: Anda akan menghapus akun secara permanen!\n\nSemua data akan hilang dan tidak dapat dikembalikan.\n\nApakah Anda yakin?')) {
-        if(confirm('Ketik OK untuk konfirmasi penghapusan akun')) {
-          alert('Akun berhasil dihapus.\nAnda akan dialihkan ke halaman utama.');
-          window.location.href = 'login.html';
-        }
-      }
-    }
-
-    // Logout handler
-    document.getElementById('logoutBtn').addEventListener('click', function(e) {
-      e.preventDefault();
-      if(confirm('Apakah Anda yakin ingin keluar?')) {
-        window.location.href = 'login.html';
-      }
-    });
-
-    // Notifikasi sukses saat halaman dimuat
-    console.log('Halaman pengaturan siap digunakan');
-  </script>
+  document.getElementById('logoutBtn').addEventListener('click', e => {
+    e.preventDefault();
+    if (confirm('Apakah Anda yakin ingin keluar?')) window.location.href = 'login.html';
+  });
+</script>
 </body>
 </html>
